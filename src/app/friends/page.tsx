@@ -4,24 +4,31 @@ import { useState } from "react";
 import { SearchInput } from "@/components/friends/SearchInput";
 import { FriendCard } from "@/components/friends/FriendCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
 
-// Temporary mock data
-const MOCK_FRIENDS: any[] = [
-  { id: "1", name: "Ahmed Youssef", username: "ahmed.y", avatar: "https://i.pravatar.cc/150?u=ahmed", lastActive: "2m ago", recentActivityType: "like", activityCount: 142 },
-  { id: "2", name: "Sara Ahmed", username: "sara.design", avatar: "https://i.pravatar.cc/150?u=sara", lastActive: "1h ago", recentActivityType: "repost", activityCount: 56 },
-  { id: "3", name: "Omar Hesham", username: "omar.dev", avatar: "https://i.pravatar.cc/150?u=omar", lastActive: "Active now", recentActivityType: "watch", activityCount: 890 },
-  { id: "4", name: "Nour Ali", username: "nour.a", avatar: "https://i.pravatar.cc/150?u=nour", lastActive: "5h ago", recentActivityType: "like", activityCount: 12 },
-  { id: "5", name: "Youssef Tarek", username: "jo.tarek", avatar: "https://i.pravatar.cc/150?u=jo", lastActive: "1d ago", recentActivityType: "repost", activityCount: 5 },
-  { id: "6", name: "Laila Magdy", username: "laila.m", avatar: "https://i.pravatar.cc/150?u=laila", lastActive: "3m ago", recentActivityType: "like", activityCount: 304 },
-];
+import { useAppStore } from "@/store/useAppStore";
+import { formatDistanceToNow } from "date-fns";
 
 export default function FriendsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const friends = useAppStore((state) => state.friends);
+  const searchQuery = useAppStore((state) => state.searchQuery);
+  const setSearchQuery = useAppStore((state) => state.setSearchQuery);
 
-  const filteredFriends = MOCK_FRIENDS.filter((friend) => 
-    friend.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredFriends = friends.filter((friend) => 
+    friend.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     friend.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Map db Friend to FriendCard props
+  const displayFriends = filteredFriends.map(f => ({
+    id: f.id,
+    name: f.fullName,
+    username: f.username,
+    avatar: f.profilePicUrl,
+    lastActive: formatDistanceToNow(f.lastSyncAt, { addSuffix: true }),
+    recentActivityType: "like" as const, // We would normally compute this or store the latest
+    activityCount: 0 // Placeholder until we load activities or count them
+  }));
 
   return (
     <div className="space-y-8 pb-10 flex flex-col min-h-full">
@@ -38,12 +45,12 @@ export default function FriendsPage() {
 
       <div className="flex-1">
         <AnimatePresence mode="popLayout">
-          {filteredFriends.length > 0 ? (
+          {displayFriends.length > 0 ? (
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               layout
             >
-              {filteredFriends.map((friend, index) => (
+              {displayFriends.map((friend, index) => (
                 <FriendCard
                   key={friend.id}
                   {...friend}
