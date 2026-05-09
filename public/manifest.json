@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram Activity Dashboard",
+  "version": "1.0.0",
+  "description": "Professional Instagram Activity Dashboard & Tracker",
+  "action": {
+    "default_title": "Open Dashboard"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.instagram.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [
+    "cookies",
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.instagram.com/*"
+  ]
+}
